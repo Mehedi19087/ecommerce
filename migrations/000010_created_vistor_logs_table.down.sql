@@ -1,0 +1,1 @@
+drop table if EXISTS visitor_logs;
