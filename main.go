@@ -10,6 +10,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
+	"time"
 )
 
 func main() {
@@ -44,11 +45,21 @@ func main() {
 	//router.Use(auth.LocationTrackingMiddleware(db))
 
 	// Configure CORS
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true // For development
-	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
-	router.Use(cors.New(config))
+	router.Use(cors.New(cors.Config{
+        AllowOrigins: []string{
+        "https://alrizvan.com",      // 🔥 Your production domain
+        "https://www.alrizvan.com",  // 🔥 With www subdomain
+        "http://localhost:3000",          // 🔥 For local development
+        "http://localhost:3001",          // 🔥 Alternative local port
+    },
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge:          12 * time.Hour,
+    }))
+
+
 	router.Use(func(c *gin.Context) {
 		log.Printf("Request received: %s %s", c.Request.Method, c.Request.URL.Path)
 		c.Next()
