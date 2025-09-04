@@ -83,7 +83,7 @@ func (c *UserController) GoogleCallBack(ctx *gin.Context) {
 	}
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "https://finbanglavoice.fi"
+		frontendURL = "https://alrizvan.com"
 	}
 
 	redirectURL := fmt.Sprintf("%s/auth/success?token=%s", frontendURL, jwtToken)
