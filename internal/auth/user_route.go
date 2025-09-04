@@ -10,9 +10,9 @@ func SetupAuthRoutes(router *gin.Engine, userController *UserController) {
 	// Public routes
 	auth := v1.Group("/auth")
 	{
-		auth.GET("/auth/google/login",userController.GoogleLogin)
-        auth.GET("/auth/google/callback",userController.GoogleCallBack)
-		router.GET("/api/v1/admin/visitors/city", GetVisitorCountByCity)
+		auth.GET("/google/login",userController.GoogleLogin)
+        auth.GET("/google/callback",userController.GoogleCallBack)
+		router.GET("/admin/visitors/city", GetVisitorCountByCity)
 	}
 
 	// Protected routes
