@@ -1,16 +1,19 @@
 package main
 
 import (
+	"ecommerce/config"
 	"ecommerce/database"
 	"ecommerce/internal/auth"
 	"ecommerce/internal/cart"
 	"ecommerce/internal/catalog"
+
 	//"ecommerce/internal/health"
 	"ecommerce/internal/order"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"log"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -19,6 +22,8 @@ func main() {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 	gin.SetMode(gin.ReleaseMode)
+	config.InitGoogleAuth()
+
 	// Initialize repositories
 	userRepo := auth.NewUserRepository(db)
 	productRepo := catalog.NewProductRepository(db)
