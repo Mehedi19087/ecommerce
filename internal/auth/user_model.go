@@ -10,7 +10,6 @@ type User struct {
 	Name     string `gorm:"not null" json:"name"`
 	GoogleID string `gorm:"not null" json:"google_id"`
 	Email    string `gorm:"not null;uniqueIndex" json:"email"`
-	Password string `gorm:"not null" json:"-"`
 
 	Phone    string `json:"phone"`
 	Birthday string `json:"birthday"`
