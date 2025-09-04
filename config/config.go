@@ -11,8 +11,8 @@ var GoogleOAuthConfig *oauth2.Config
 func InitGoogleAuth() {
 
 	GoogleOAuthConfig = &oauth2.Config{
-		ClientID:     os.Getenv("Client_ID"),
-		ClientSecret: os.Getenv("Client_Secret"),
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		RedirectURL:  "",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
