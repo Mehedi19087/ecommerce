@@ -17,6 +17,7 @@ func SetupCatalogRoutes(
 
 	// Product routes
 	products := v1.Group("/products")
+	
 	{
 		// No auth checks - all endpoints accessible to everyone
 		products.POST("", productController.CreateProduct)

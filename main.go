@@ -52,6 +52,7 @@ func main() {
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
         AllowOrigins: []string{
+		"https://admin-ecommarce.web.app",
         "https://alrizvan.com",      // 🔥 Your production domain
         "https://www.alrizvan.com",  // 🔥 With www subdomain
         "http://localhost:3000",          // 🔥 For local development
