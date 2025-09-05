@@ -45,9 +45,11 @@ func main() {
 	// Setup router and routes
 	router := gin.Default()
 
+
 	// Add request logging
 	router.Use(gin.Logger())
 	//router.Use(auth.LocationTrackingMiddleware(db))
+	router.Static("/uploads", "./uploads")
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{

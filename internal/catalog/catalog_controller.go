@@ -1,9 +1,14 @@
 package catalog
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+    "fmt"
+    "os"
+    "path/filepath"
+    "time"
+
+	"github.com/gin-gonic/gin"
 	// "bytes"
 	// "io"
 	// "log"
@@ -65,27 +70,38 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 }
 
 func (c *ProductController) GetProductByID(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid product id Format",
-		})
-		return
-	}
-	product, err := c.productService.GetProductByID(uint(id))
-	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"product": product,
-	})
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "invalid product id Format",
+        })
+        return
+    }
+    product, err := c.productService.GetProductByID(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusNotFound, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
 
+    // ✅ Convert filenames to full URLs
+
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "product": map[string]interface{}{
+            "id":          product.ID,
+            "name":        product.Name,
+            "images":      []string(product.Image), // ✅ Full URLs instead of filenames
+            "description": product.Description,
+            "sku":         product.SKU,
+            "price":       product.Price,
+            "stock":       product.Stock,
+            "category_id": product.CategoryID,
+        },
+    })
 }
-
 func (c *ProductController) ListProducts(ctx *gin.Context) {
 	products, err := c.productService.ListProducts()
 	if err != nil {
@@ -95,9 +111,27 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"products": products,
-	})
+	var productsResponse []map[string]interface{}
+    for _, product := range products {
+        productsResponse = append(productsResponse, map[string]interface{}{
+            "id":          product.ID,
+            "name":        product.Name,
+            "images":      []string(product.Image), // ✅ Return original URLs
+            "description": product.Description,
+            "sku":         product.SKU,
+            "price":       product.Price,
+            "stock":       product.Stock,
+            "category_id": product.CategoryID,
+            "sub_category_id": product.SubCategoryID,
+            "sub_sub_category_id": product.SubSubCategoryID,
+            "created_at":  product.CreatedAt,
+            "updated_at":  product.UpdatedAt,
+        })
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "products": productsResponse,
+    })
 }
 
 type updateProductRequest struct {
@@ -615,5 +649,65 @@ func (c *ProductController) ListSubCategories(ctx *gin.Context) {
 
     ctx.JSON(http.StatusOK, gin.H{
         "subcategories": subCategories,
+    })
+}
+
+
+// Add this method to your ProductController
+func (c *ProductController) UploadImage(ctx *gin.Context) {
+    // Get the uploaded file
+    file, err := ctx.FormFile("image")
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "No file uploaded",
+        })
+        return
+    }
+
+    // Validate file type
+    allowedTypes := map[string]bool{
+        ".jpg":  true,
+        ".jpeg": true,
+        ".png":  true,
+        ".gif":  true,
+        ".webp": true,
+    }
+    
+    ext := filepath.Ext(file.Filename)
+    if !allowedTypes[ext] {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Only image files (jpg, jpeg, png, gif, webp) are allowed",
+        })
+        return
+    }
+
+    // Create uploads directory if it doesn't exist
+    uploadDir := "./uploads"
+    if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+        if err := os.MkdirAll(uploadDir, 0755); err != nil {
+            ctx.JSON(http.StatusInternalServerError, gin.H{
+                "error": "Failed to create upload directory",
+            })
+            return
+        }
+    }
+
+    // Generate unique filename
+    filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+    filePath := filepath.Join(uploadDir, filename)
+
+    // Save file
+    if err := ctx.SaveUploadedFile(file, filePath); err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to save file",
+        })
+        return
+    }
+
+    // Return the URL
+    ctx.JSON(http.StatusOK, gin.H{
+        "message":  "File uploaded successfully",
+        "filename": filename,
+        "url":      fmt.Sprintf("https://ecommerce-production-16c4.up.railway.app/uploads/%s", filename),
     })
 }

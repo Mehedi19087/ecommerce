@@ -7,7 +7,11 @@ import (
 func SetupCatalogRoutes(
     router *gin.Engine,
     productController *ProductController) {
+
+    
     v1 := router.Group("/api/v1")
+
+    v1.POST("/upload", productController.UploadImage)
     
     //category routes
     categories := v1.Group("/categories")
