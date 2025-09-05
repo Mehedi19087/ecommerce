@@ -23,10 +23,10 @@ func SetupCatalogRoutes(
         categories.GET("/:id", productController.GetCategoryByID)              
         categories.GET("/:id/products", productController.GetProductsByCategory) 
         categories.GET("/:id/subcategories", productController.GetSubCategoriesByCategory) // ✅ Changed :category_id to :id
-        
-        categories.DELETE("/:id", productController.DeleteCategory)
-    }
+        categories.PUT("/:id", productController.UpdateCategory)
+		categories.DELETE("/:id", productController.DeleteCategory)
 
+}
     // SubCategory routes
     subcategories := v1.Group("/subcategories")
     {

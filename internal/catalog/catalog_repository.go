@@ -38,6 +38,8 @@ type ProductRepository interface {
 	DeleteCategory(id uint) error
     DeleteSubCategory(id uint) error
     DeleteSubSubCategory(id uint) error
+
+	UpdateCategory(category *Category) error
 }
 
 type productRepository struct {
@@ -194,4 +196,8 @@ func (r *productRepository) DeleteSubCategory(id uint) error {
 
 func (r *productRepository) DeleteSubSubCategory(id uint) error {
     return r.db.Delete(&SubSubCategory{}, id).Error
+}
+
+func (r *productRepository) UpdateCategory(category *Category) error {
+    return r.db.Save(category).Error
 }

@@ -569,3 +569,39 @@ func (c *ProductController) DeleteSubSubCategory(ctx *gin.Context) {
         "message": "Sub-subcategory deleted successfully",
     })
 }
+
+type UpdateCategoryRequest struct {
+    Name string `json:"name" binding:"required"`
+}
+
+func (c *ProductController) UpdateCategory(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid category ID format",
+        })
+        return
+    }
+
+    var req UpdateCategoryRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
+
+    category, err := c.productService.UpdateCategory(uint(id), req.Name)
+    if err != nil {
+        ctx.JSON(http.StatusNotFound, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "message":  "Category updated successfully",
+        "category": category,
+    })
+}

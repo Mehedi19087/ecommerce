@@ -39,6 +39,8 @@ type ProductService interface {
 	 DeleteCategory(id uint) error
     DeleteSubCategory(id uint) error
     DeleteSubSubCategory(id uint) error
+
+	UpdateCategory(id uint, name string) (*Category, error)
 }
 type productService struct {
 	repo ProductRepository
@@ -342,4 +344,26 @@ func (s *productService) DeleteSubSubCategory(id uint) error {
     }
 
     return s.repo.DeleteSubSubCategory(id)
+}
+
+func (s *productService) UpdateCategory(id uint, name string) (*Category, error) {
+    if id == 0 {
+        return nil, errors.New("category ID is required")
+    }
+    if name == "" {
+        return nil, errors.New("category name is required")
+    }
+
+    category, err := s.repo.FindCategoryByID(id)
+    if err != nil {
+        return nil, errors.New("category not found")
+    }
+
+    category.Name = name
+    err = s.repo.UpdateCategory(category)
+    if err != nil {
+        return nil, err
+    }
+
+    return category, nil
 }
