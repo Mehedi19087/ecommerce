@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 	"time"
 )
@@ -8,7 +9,7 @@ import (
 type Product struct {
 	ID          uint    `json:"id" gorm:"primaryKey"`
 	Name        string  `json:"name" gorm:"not null"`
-	Image       []string  `json:"images" gorm:"type:json"`
+	Image       pq.StringArray `json:"images" gorm:"type:text[]"`
 	Description string  `json:"description"`
 	SKU         string  `json:"sku" gorm:"uniqueIndex"`
 	Price       float64 `json:"price" gorm:"not null"`

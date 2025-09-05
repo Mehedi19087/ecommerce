@@ -3,6 +3,8 @@ package catalog
 import (
 	"errors"
 	"log"
+
+	"github.com/lib/pq"
 )
 
 type ProductService interface {
@@ -67,7 +69,7 @@ func (s *productService) CreateProduct(name string, images []string, description
 	}
 	product := &Product{
 		Name:        name,
-		Image:       images,
+		Image:       pq.StringArray(images),
 		Description: description,
 		SKU:         sku,
 		Price:       price,

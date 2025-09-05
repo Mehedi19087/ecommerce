@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	github.com/gin-contrib/cors v1.7.5
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	golang.org/x/oauth2 v0.30.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/gorm v1.26.0
