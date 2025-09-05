@@ -68,6 +68,10 @@ func (s *orderService) CreateOrderFromCart(userID uint, orderData CreateOrderReq
 
 	// Create order items
 	for _, cartItem := range userCart.Items {
+		var productImage string 
+		if len(cartItem.Product.Image) > 0 {
+        productImage = cartItem.Product.Image[0] // Take first image
+    }
 		orderItem := &OrderItem{
 			OrderID:      order.ID,
 			ProductID:    cartItem.ProductID,
@@ -75,7 +79,7 @@ func (s *orderService) CreateOrderFromCart(userID uint, orderData CreateOrderReq
 			Price:        cartItem.Product.Price,
 			Quantity:     cartItem.Quantity,
 			Subtotal:     float64(cartItem.Quantity) * cartItem.Product.Price,
-			ProductImage: cartItem.Product.Image,
+			ProductImage: productImage,
 			ProductSKU:   cartItem.Product.SKU,
 		}
 

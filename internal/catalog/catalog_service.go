@@ -8,7 +8,7 @@ import (
 type ProductService interface {
 
 	//products method
-	CreateProduct(name, image, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error)
+	CreateProduct(name string, images []string, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error)
 	GetProductByID(id uint) (*Product, error)
 	ListProducts() ([]*Product, error)
 	UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint,subCategoryID, subSubCategoryID *uint) (*Product, error)
@@ -52,11 +52,11 @@ func NewProductService(repo ProductRepository) ProductService {
 	return &productService{repo: repo}
 }
 
-func (s *productService) CreateProduct(name, image, description, sku string, price float64, stock int, categoryId uint , subCategoryID, subSubCategoryID *uint) (*Product, error) {
+func (s *productService) CreateProduct(name string, images []string, description, sku string, price float64, stock int, categoryId uint , subCategoryID, subSubCategoryID *uint) (*Product, error) {
 	if name == "" {
 		return nil, errors.New("product name is required")
 	}
-	if image == "" {
+	if len(images) == 0 {
 		return nil, errors.New("product image is required")
 	}
 	if price < 0 {
@@ -67,7 +67,7 @@ func (s *productService) CreateProduct(name, image, description, sku string, pri
 	}
 	product := &Product{
 		Name:        name,
-		Image:       image,
+		Image:       images,
 		Description: description,
 		SKU:         sku,
 		Price:       price,

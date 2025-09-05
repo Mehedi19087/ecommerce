@@ -20,7 +20,7 @@ func NewProductController(productService ProductService) *ProductController {
 // request structs
 type createProductRequest struct {
 	Name        string   `json:"name" binding:"required"`
-	Image       []string `json:"image" binding:"required,min=1"`
+	Image       []string `json:"images" binding:"required,min=1"`
 	Description string   `json:"description"`
 	SKU         string   `json:"sku" binding:"required"`
 	Price       float64  `json:"price" binding:"required,min=0"`
@@ -40,13 +40,9 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 		})
 		return
 	}
-	image := ""
-	if len(req.Image) > 0 {
-		image = req.Image[0]
-	}
 	product, err := c.productService.CreateProduct(
 		req.Name,
-		image,
+		req.Image,
 		req.Description,
 		req.SKU,
 		req.Price,
@@ -106,12 +102,13 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
 
 type updateProductRequest struct {
 	Name        string  `json:"name"`
+	Image            []string `json:"images"` 
 	Description string  `json:"description"`
 	SKU         string  `json:"sku"`
 	Price       float64 `json:"price" binding:"min=0"`
 	Stock       int     `json:"stock" binding:"min=0"`
 	CategoryID  uint    `json:"category_id"`
-	SubCategoryID    *uint   `json:"sub_category_id,omitempty"`    // ✅ ADD
+	SubCategoryID    *uint   `json:"sub_category_id,omitempty"`
     SubSubCategoryID *uint   `json:"sub_sub_category_id,omitempty"`
 }
 
