@@ -19,6 +19,13 @@ type ProductService interface {
 	CreateCategory(name string) (*Category, error)
 
 	GetProductsByCategory(categoryID uint, page, pageSize int) ([]Product, int64, error)
+
+
+	CreateSubCategory(name string, categoryID uint) (*SubCategory, error)
+    CreateSubSubCategory(name string, subCategoryID uint) (*SubSubCategory, error)
+    GetCategoryHierarchy() ([]Category, error)
+    GetSubCategoriesByCategoryID(categoryID uint) ([]SubCategory, error)
+    GetSubSubCategoriesBySubCategoryID(subCategoryID uint) ([]SubSubCategory, error)
 }
 type productService struct {
 	repo ProductRepository
@@ -155,3 +162,62 @@ func (s *productService) SearchProducts(searchTerm string) ([]Product, error) {
 	}
 	return products, nil
 }
+
+
+// 👈 NEW: Add these service implementations
+func (s *productService) CreateSubCategory(name string, categoryID uint) (*SubCategory, error) {
+    if name == "" {
+        return nil, errors.New("subcategory name is required")
+    }
+
+    // Check if parent category exists
+    _, err := s.repo.FindCategoryByID(categoryID)
+    if err != nil {
+        return nil, errors.New("parent category not found")
+    }
+
+    subCategory := &SubCategory{
+        Name:       name,
+        CategoryID: categoryID,
+    }
+
+    err = s.repo.CreateSubCategory(subCategory)
+    if err != nil {
+        return nil, err
+    }
+
+    return subCategory, nil
+}
+
+func (s *productService) CreateSubSubCategory(name string, subCategoryID uint) (*SubSubCategory, error) {
+    if name == "" {
+        return nil, errors.New("sub-subcategory name is required")
+    }
+
+    subSubCategory := &SubSubCategory{
+        Name:          name,
+        SubCategoryID: subCategoryID,
+        ProductCount:  0,
+    }
+
+    err := s.repo.CreateSubSubCategory(subSubCategory)
+    if err != nil {
+        return nil, errors.New("failed to create sub-subcategory")
+    }
+
+    return subSubCategory, nil
+}
+
+
+func (s *productService) GetCategoryHierarchy() ([]Category, error) {
+    return s.repo.FindCategoriesWithHierarchy()
+}
+
+func (s *productService) GetSubCategoriesByCategoryID(categoryID uint) ([]SubCategory, error) {
+    return s.repo.FindSubCategoriesByCategoryID(categoryID)
+}
+
+func (s *productService) GetSubSubCategoriesBySubCategoryID(subCategoryID uint) ([]SubSubCategory, error) {
+    return s.repo.FindSubSubCategoriesBySubCategoryID(subCategoryID)
+}
+

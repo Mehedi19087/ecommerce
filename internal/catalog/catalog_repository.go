@@ -19,6 +19,13 @@ type ProductRepository interface {
 
 	//products by category method
 	FindProductsByCategory(CategoryID uint, limit, offset int) ([]Product, int64, error)
+
+	CreateSubCategory(subCategory *SubCategory) error
+    CreateSubSubCategory(subSubCategory *SubSubCategory) error
+    FindCategoriesWithHierarchy() ([]Category, error)
+    FindSubCategoriesByCategoryID(categoryID uint) ([]SubCategory, error)
+    FindSubSubCategoriesBySubCategoryID(subCategoryID uint) ([]SubSubCategory, error)
+	FindCategoryByID(id uint) (*Category, error)
 }
 
 type productRepository struct {
@@ -86,4 +93,40 @@ func (r *productRepository) FindBySearchTerm(searchTerm string) ([]Product, erro
 		Find(&products).Error
 
 	return products, err
+}
+
+func (r *productRepository) CreateSubCategory(subCategory *SubCategory) error {
+    return r.db.Create(subCategory).Error
+}
+
+func (r *productRepository) CreateSubSubCategory(subSubCategory *SubSubCategory) error {
+    return r.db.Create(subSubCategory).Error
+}
+
+func (r *productRepository) FindCategoriesWithHierarchy() ([]Category, error) {
+    var categories []Category
+    err := r.db.Preload("SubCategories.SubSubCategories").Find(&categories).Error
+    return categories, err
+}
+
+func (r *productRepository) FindSubCategoriesByCategoryID(categoryID uint) ([]SubCategory, error) {
+    var subCategories []SubCategory
+    err := r.db.Where("category_id = ?", categoryID).Find(&subCategories).Error
+    return subCategories, err
+}
+
+func (r *productRepository) FindSubSubCategoriesBySubCategoryID(subCategoryID uint) ([]SubSubCategory, error) {
+    var subSubCategories []SubSubCategory
+    err := r.db.Where("sub_category_id = ?", subCategoryID).Find(&subSubCategories).Error
+    return subSubCategories, err
+}
+
+// Add this method to your productRepository struct
+func (r *productRepository) FindCategoryByID(id uint) (*Category, error) {
+    var category Category
+    err := r.db.First(&category, id).Error
+    if err != nil {
+        return nil, err
+    }
+    return &category, nil
 }

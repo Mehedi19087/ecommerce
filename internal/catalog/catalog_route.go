@@ -13,11 +13,14 @@ func SetupCatalogRoutes(
 	{
 		categories.POST("", productController.CreateCategory)
 		categories.GET("/:id/products", productController.GetProductsByCategory)
+		categories.POST("/subcategory", productController.CreateSubCategory)
+        categories.POST("/sub-subcategory", productController.CreateSubSubCategory)
+        categories.GET("/hierarchy", productController.GetCategoryHierarchy)
 	}
 
 	// Product routes
 	products := v1.Group("/products")
-	
+
 	{
 		// No auth checks - all endpoints accessible to everyone
 		products.POST("", productController.CreateProduct)
@@ -26,6 +29,7 @@ func SetupCatalogRoutes(
 		products.PUT("/:id", productController.UpdateProduct)
 		products.DELETE("/:id", productController.DeleteProduct)
 		products.GET("/search", productController.SearchProducts)
+
 	}
 
 }

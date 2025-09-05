@@ -249,3 +249,56 @@ func (c *ProductController) SearchProducts(ctx *gin.Context) {
 		"products": products,
 	})
 }
+
+
+type CreateSubCategoryRequest struct {
+    Name       string `json:"name" binding:"required"`
+    CategoryID uint   `json:"category_id" binding:"required"`
+}
+
+type CreateSubSubCategoryRequest struct {
+    Name          string `json:"name" binding:"required"`
+    SubCategoryID uint   `json:"sub_category_id" binding:"required"`
+}
+
+func (c *ProductController) CreateSubCategory(ctx *gin.Context) {
+    var req CreateSubCategoryRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    subCategory, err := c.productService.CreateSubCategory(req.Name, req.CategoryID)
+    if err != nil {
+        ctx.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+
+    ctx.JSON(201, gin.H{"subcategory": subCategory})
+}
+
+func (c *ProductController) CreateSubSubCategory(ctx *gin.Context) {
+    var req CreateSubSubCategoryRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    subSubCategory, err := c.productService.CreateSubSubCategory(req.Name, req.SubCategoryID)
+    if err != nil {
+        ctx.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+
+    ctx.JSON(201, gin.H{"sub_subcategory": subSubCategory})
+}
+
+func (c *ProductController) GetCategoryHierarchy(ctx *gin.Context) {
+    categories, err := c.productService.GetCategoryHierarchy()
+    if err != nil {
+        ctx.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+
+    ctx.JSON(200, gin.H{"categories": categories})
+}
