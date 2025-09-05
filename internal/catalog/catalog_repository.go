@@ -40,6 +40,7 @@ type ProductRepository interface {
     DeleteSubSubCategory(id uint) error
 
 	UpdateCategory(category *Category) error
+	FindAllSubCategories() ([]SubCategory, error)
 }
 
 type productRepository struct {
@@ -200,4 +201,10 @@ func (r *productRepository) DeleteSubSubCategory(id uint) error {
 
 func (r *productRepository) UpdateCategory(category *Category) error {
     return r.db.Save(category).Error
+}
+
+func (r *productRepository) FindAllSubCategories() ([]SubCategory, error) {
+    var subCategories []SubCategory
+    err := r.db.Find(&subCategories).Error
+    return subCategories, err
 }

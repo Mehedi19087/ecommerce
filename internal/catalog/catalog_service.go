@@ -41,6 +41,8 @@ type ProductService interface {
     DeleteSubSubCategory(id uint) error
 
 	UpdateCategory(id uint, name string) (*Category, error)
+
+	ListSubCategories() ([]SubCategory, error)
 }
 type productService struct {
 	repo ProductRepository
@@ -366,4 +368,8 @@ func (s *productService) UpdateCategory(id uint, name string) (*Category, error)
     }
 
     return category, nil
+}
+
+func (s *productService) ListSubCategories() ([]SubCategory, error) {
+    return s.repo.FindAllSubCategories()
 }

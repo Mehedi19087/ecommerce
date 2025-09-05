@@ -30,6 +30,8 @@ func SetupCatalogRoutes(
     // SubCategory routes
     subcategories := v1.Group("/subcategories")
     {
+		subcategories.GET("", productController.ListSubCategories)
+    
         subcategories.GET("/:id", productController.GetSubCategoryByID)                    
         subcategories.GET("/:id/sub-subcategories", productController.GetSubSubCategoriesBySubCategory) // ✅ Changed :subcategory_id to :id
         subcategories.GET("/:id/products", productController.GetProductsBySubCategory)

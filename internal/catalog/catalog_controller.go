@@ -605,3 +605,18 @@ func (c *ProductController) UpdateCategory(ctx *gin.Context) {
         "category": category,
     })
 }
+
+// ✅ ADD THIS METHOD
+func (c *ProductController) ListSubCategories(ctx *gin.Context) {
+    subCategories, err := c.productService.ListSubCategories()
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve subcategories",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "subcategories": subCategories,
+    })
+}
