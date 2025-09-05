@@ -15,6 +15,7 @@ type ProductRepository interface {
 	FindBySearchTerm(searchTerm string) ([]Product, error)
 
 	//category methods
+	
 	CreateCategory(category *Category) error
 
 	//products by category method
@@ -26,6 +27,17 @@ type ProductRepository interface {
     FindSubCategoriesByCategoryID(categoryID uint) ([]SubCategory, error)
     FindSubSubCategoriesBySubCategoryID(subCategoryID uint) ([]SubSubCategory, error)
 	FindCategoryByID(id uint) (*Category, error)
+
+	FindAllCategories() ([]Category, error)
+    FindSubCategoryByID(id uint) (*SubCategory, error)
+    FindSubSubCategoryByID(id uint) (*SubSubCategory, error)
+
+	FindProductsBySubCategoryID(subCategoryID uint) ([]Product, error)
+	FindProductsBySubSubCategoryID(subSubCategoryID uint) ([]Product, error)
+
+	DeleteCategory(id uint) error
+    DeleteSubCategory(id uint) error
+    DeleteSubSubCategory(id uint) error
 }
 
 type productRepository struct {
@@ -129,4 +141,57 @@ func (r *productRepository) FindCategoryByID(id uint) (*Category, error) {
         return nil, err
     }
     return &category, nil
+}
+
+// Add these methods to your productRepository struct (after your existing methods)
+
+// Get all categories
+func (r *productRepository) FindAllCategories() ([]Category, error) {
+    var categories []Category
+    err := r.db.Find(&categories).Error
+    return categories, err
+}
+
+// Get specific subcategory by ID
+func (r *productRepository) FindSubCategoryByID(id uint) (*SubCategory, error) {
+    var subCategory SubCategory
+    err := r.db.First(&subCategory, id).Error
+    if err != nil {
+        return nil, err
+    }
+    return &subCategory, nil
+}
+
+// Get specific sub-subcategory by ID
+func (r *productRepository) FindSubSubCategoryByID(id uint) (*SubSubCategory, error) {
+    var subSubCategory SubSubCategory
+    err := r.db.First(&subSubCategory, id).Error
+    if err != nil {
+        return nil, err
+    }
+    return &subSubCategory, nil
+}
+
+func (r *productRepository) FindProductsBySubCategoryID(subCategoryID uint) ([]Product, error) {
+    var products []Product
+    err := r.db.Where("sub_category_id = ?", subCategoryID).Find(&products).Error
+    return products, err
+}
+
+func (r *productRepository) FindProductsBySubSubCategoryID(subSubCategoryID uint) ([]Product, error) {
+    var products []Product
+    err := r.db.Where("sub_sub_category_id = ?", subSubCategoryID).Find(&products).Error
+    return products, err
+}
+
+func (r *productRepository) DeleteCategory(id uint) error {
+    return r.db.Delete(&Category{}, id).Error
+}
+
+func (r *productRepository) DeleteSubCategory(id uint) error {
+    return r.db.Delete(&SubCategory{}, id).Error
+}
+
+func (r *productRepository) DeleteSubSubCategory(id uint) error {
+    return r.db.Delete(&SubSubCategory{}, id).Error
 }

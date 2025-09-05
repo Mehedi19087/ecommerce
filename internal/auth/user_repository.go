@@ -77,3 +77,4 @@ func (r *userRepository) UpdateAddress(address *Address) error {
 func (r *userRepository) DeleteAddress(id uint, userID uint) error {
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&Address{}).Error
 }
+

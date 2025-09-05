@@ -26,6 +26,9 @@ type createProductRequest struct {
 	Price       float64  `json:"price" binding:"required,min=0"`
 	Stock       int      `json:"stock" binding:"min=0"`
 	CategoryID  uint     `json:"category_id"`
+	SubCategoryID    *uint `json:"sub_category_id,omitempty"`          // Optional
+    SubSubCategoryID *uint `json:"sub_sub_category_id,omitempty"` 
+
 }
 
 func (c *ProductController) CreateProduct(ctx *gin.Context) {
@@ -49,6 +52,8 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 		req.Price,
 		req.Stock,
 		req.CategoryID,
+		req.SubCategoryID,
+		req.SubSubCategoryID,
 	)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -192,7 +197,7 @@ func (c *ProductController) CreateCategory(ctx *gin.Context) {
 }
 
 func (c *ProductController) GetProductsByCategory(ctx *gin.Context) {
-	categoryIDStr := ctx.Query("category_id")
+	categoryIDStr := ctx.Param("category_id")
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "20"))
 
@@ -301,4 +306,262 @@ func (c *ProductController) GetCategoryHierarchy(ctx *gin.Context) {
     }
 
     ctx.JSON(200, gin.H{"categories": categories})
+}
+
+// Add these methods to your existing ProductController
+
+// Get all categories
+func (c *ProductController) ListCategories(ctx *gin.Context) {
+    categories, err := c.productService.ListCategories()
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve categories",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "categories": categories,
+    })
+}
+
+// Get category by ID
+func (c *ProductController) GetCategoryByID(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid category ID format",
+        })
+        return
+    }
+
+    category, err := c.productService.GetCategoryByID(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusNotFound, gin.H{
+            "error": "Category not found",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "category": category,
+    })
+}
+
+// Get subcategories by category ID
+func (c *ProductController) GetSubCategoriesByCategory(ctx *gin.Context) {
+    categoryIDStr := ctx.Param("category_id")
+    categoryID, err := strconv.ParseUint(categoryIDStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid category ID format",
+        })
+        return
+    }
+
+    subCategories, err := c.productService.GetSubCategoriesByCategoryID(uint(categoryID))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve subcategories",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "subcategories": subCategories,
+    })
+}
+
+// Get specific subcategory by ID
+func (c *ProductController) GetSubCategoryByID(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid subcategory ID format",
+        })
+        return
+    }
+
+    subCategory, err := c.productService.GetSubCategoryByID(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusNotFound, gin.H{
+            "error": "Subcategory not found",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "subcategory": subCategory,
+    })
+}
+
+// Get sub-subcategories by subcategory ID
+func (c *ProductController) GetSubSubCategoriesBySubCategory(ctx *gin.Context) {
+    subCategoryIDStr := ctx.Param("subcategory_id")
+    subCategoryID, err := strconv.ParseUint(subCategoryIDStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid subcategory ID format",
+        })
+        return
+    }
+
+    subSubCategories, err := c.productService.GetSubSubCategoriesBySubCategoryID(uint(subCategoryID))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve sub-subcategories",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "sub_subcategories": subSubCategories,
+    })
+}
+
+// Get specific sub-subcategory by ID
+func (c *ProductController) GetSubSubCategoryByID(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid sub-subcategory ID format",
+        })
+        return
+    }
+
+    subSubCategory, err := c.productService.GetSubSubCategoryByID(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusNotFound, gin.H{
+            "error": "Sub-subcategory not found",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "sub_subcategory": subSubCategory,
+    })
+}
+
+
+// Get products by subcategory
+func (c *ProductController) GetProductsBySubCategory(ctx *gin.Context) {
+    subCategoryIDStr := ctx.Param("id")
+    subCategoryID, err := strconv.ParseUint(subCategoryIDStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid subcategory ID format",
+        })
+        return
+    }
+
+    products, err := c.productService.GetProductsBySubCategoryID(uint(subCategoryID))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve products",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "products": products,
+    })
+}
+
+// Get products by sub-subcategory
+func (c *ProductController) GetProductsBySubSubCategory(ctx *gin.Context) {
+    subSubCategoryIDStr := ctx.Param("id")
+    subSubCategoryID, err := strconv.ParseUint(subSubCategoryIDStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid sub-subcategory ID format",
+        })
+        return
+    }
+
+    products, err := c.productService.GetProductsBySubSubCategoryID(uint(subSubCategoryID))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": "Failed to retrieve products",
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "products": products,
+    })
+}
+
+// Delete category
+func (c *ProductController) DeleteCategory(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid category ID format",
+        })
+        return
+    }
+
+    err = c.productService.DeleteCategory(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "message": "Category deleted successfully",
+    })
+}
+
+// Delete subcategory
+func (c *ProductController) DeleteSubCategory(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid subcategory ID format",
+        })
+        return
+    }
+
+    err = c.productService.DeleteSubCategory(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "message": "Subcategory deleted successfully",
+    })
+}
+
+// Delete sub-subcategory
+func (c *ProductController) DeleteSubSubCategory(ctx *gin.Context) {
+    idStr := ctx.Param("id")
+    id, err := strconv.ParseUint(idStr, 10, 64)
+    if err != nil {
+        ctx.JSON(http.StatusBadRequest, gin.H{
+            "error": "Invalid sub-subcategory ID format",
+        })
+        return
+    }
+
+    err = c.productService.DeleteSubSubCategory(uint(id))
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{
+            "error": err.Error(),
+        })
+        return
+    }
+
+    ctx.JSON(http.StatusOK, gin.H{
+        "message": "Sub-subcategory deleted successfully",
+    })
 }
