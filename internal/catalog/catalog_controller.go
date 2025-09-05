@@ -111,6 +111,8 @@ type updateProductRequest struct {
 	Price       float64 `json:"price" binding:"min=0"`
 	Stock       int     `json:"stock" binding:"min=0"`
 	CategoryID  uint    `json:"category_id"`
+	SubCategoryID    *uint   `json:"sub_category_id,omitempty"`    // ✅ ADD
+    SubSubCategoryID *uint   `json:"sub_sub_category_id,omitempty"`
 }
 
 func (c *ProductController) UpdateProduct(ctx *gin.Context) {
@@ -137,6 +139,8 @@ func (c *ProductController) UpdateProduct(ctx *gin.Context) {
 		req.Price,
 		req.Stock,
 		req.CategoryID,
+		req.SubCategoryID,
+        req.SubSubCategoryID,
 	)
 
 	if err != nil {
@@ -197,7 +201,7 @@ func (c *ProductController) CreateCategory(ctx *gin.Context) {
 }
 
 func (c *ProductController) GetProductsByCategory(ctx *gin.Context) {
-	categoryIDStr := ctx.Param("category_id")
+	categoryIDStr := ctx.Param("id")
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "20"))
 
@@ -351,7 +355,7 @@ func (c *ProductController) GetCategoryByID(ctx *gin.Context) {
 
 // Get subcategories by category ID
 func (c *ProductController) GetSubCategoriesByCategory(ctx *gin.Context) {
-    categoryIDStr := ctx.Param("category_id")
+    categoryIDStr := ctx.Param("id")
     categoryID, err := strconv.ParseUint(categoryIDStr, 10, 64)
     if err != nil {
         ctx.JSON(http.StatusBadRequest, gin.H{
@@ -399,7 +403,7 @@ func (c *ProductController) GetSubCategoryByID(ctx *gin.Context) {
 
 // Get sub-subcategories by subcategory ID
 func (c *ProductController) GetSubSubCategoriesBySubCategory(ctx *gin.Context) {
-    subCategoryIDStr := ctx.Param("subcategory_id")
+    subCategoryIDStr := ctx.Param("id")
     subCategoryID, err := strconv.ParseUint(subCategoryIDStr, 10, 64)
     if err != nil {
         ctx.JSON(http.StatusBadRequest, gin.H{

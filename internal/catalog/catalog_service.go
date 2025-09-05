@@ -11,7 +11,7 @@ type ProductService interface {
 	CreateProduct(name, image, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error)
 	GetProductByID(id uint) (*Product, error)
 	ListProducts() ([]*Product, error)
-	UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint) (*Product, error)
+	UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint,subCategoryID, subSubCategoryID *uint) (*Product, error)
 	DeleteProduct(id uint) error
 	SearchProducts(searchTerm string) ([]Product, error)
 
@@ -98,7 +98,7 @@ func (s *productService) ListProducts() ([]*Product, error) {
 	return products, nil
 }
 
-func (s *productService) UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint) (*Product, error) {
+func (s *productService) UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error) {
 	if id == 0 {
 		return nil, errors.New("product id is required")
 	}
@@ -130,6 +130,12 @@ func (s *productService) UpdateProduct(id uint, name, description, sku string, p
 	if categoryId != 0 {
 		product.CategoryID = categoryId
 	}
+	 if subCategoryID != nil {
+        product.SubCategoryID = subCategoryID
+    }
+    if subSubCategoryID != nil {
+        product.SubSubCategoryID = subSubCategoryID
+    }
 
 	// Save updated product
 	if err := s.repo.Update(product); err != nil {
