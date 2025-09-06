@@ -1,15 +1,15 @@
 package catalog
 
 import (
+	"context"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
-    "os"
-    "context"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
-    "github.com/cloudinary/cloudinary-go/v2"
-    "github.com/cloudinary/cloudinary-go/v2/api/uploader"
-
 	// "bytes"
 	// "io"
 	// "log"
@@ -35,6 +35,7 @@ func (ct *ProductController) UploadImage(c *gin.Context) {
     // Open the file
     src, err := file.Open()
     if err != nil {
+        log.Println("file does not open")
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not open file"})
         return
     }
@@ -47,6 +48,7 @@ func (ct *ProductController) UploadImage(c *gin.Context) {
         os.Getenv("CLOUDINARY_API_SECRET"),
     )
     if err != nil {
+        log.Println("client generation issue")
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary config failed"})
         return
     }
@@ -62,6 +64,7 @@ func (ct *ProductController) UploadImage(c *gin.Context) {
     )
 
     if err != nil {
+        log.Println("Upload issue")
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Upload failed: " + err.Error()})
         return
     }
