@@ -13,7 +13,7 @@ type ProductService interface {
 	CreateProduct(name string, images []string, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error)
 	GetProductByID(id uint) (*Product, error)
 	ListProducts() ([]*Product, error)
-	UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint,subCategoryID, subSubCategoryID *uint) (*Product, error)
+	UpdateProduct(id uint,name string,images [] string, description, sku string, price float64, stock int, categoryId uint,subCategoryID, subSubCategoryID *uint) (*Product, error)
 	DeleteProduct(id uint) error
 	SearchProducts(searchTerm string) ([]Product, error)
 
@@ -104,7 +104,7 @@ func (s *productService) ListProducts() ([]*Product, error) {
 	return products, nil
 }
 
-func (s *productService) UpdateProduct(id uint, name, description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error) {
+func (s *productService) UpdateProduct(id uint, name string ,images []string , description, sku string, price float64, stock int, categoryId uint, subCategoryID, subSubCategoryID *uint) (*Product, error) {
 	if id == 0 {
 		return nil, errors.New("product id is required")
 	}
@@ -120,6 +120,9 @@ func (s *productService) UpdateProduct(id uint, name, description, sku string, p
 	if description != "" {
 		product.Description = description
 	}
+    if len(images) > 0 {
+        product.Image = pq.StringArray(images)
+    }
 
 	if sku != "" {
 		product.SKU = sku
@@ -298,18 +301,21 @@ func (s *productService) GetProductsBySubSubCategoryID(subSubCategoryID uint) ([
 
 func (s *productService) DeleteCategory(id uint) error {
     if id == 0 {
+        log.Println("id is zero")
         return errors.New("category ID is required")
     }
 
     // Check if category has subcategories
     subCategories, err := s.repo.FindSubCategoriesByCategoryID(id)
     if err == nil && len(subCategories) > 0 {
+        log.Println("it has subcategories")
         return errors.New("cannot delete category: it has subcategories")
     }
 
     // Check if category has products
     products, _, err := s.repo.FindProductsByCategory(id, 1, 0)
     if err == nil && len(products) > 0 {
+        log.Println("it has products")
         return errors.New("cannot delete category: it has products")
     }
 
@@ -318,18 +324,13 @@ func (s *productService) DeleteCategory(id uint) error {
 
 func (s *productService) DeleteSubCategory(id uint) error {
     if id == 0 {
+        log.Println("id is zero")
         return errors.New("subcategory ID is required")
     }
-
-    // Check if subcategory has sub-subcategories
-    subSubCategories, err := s.repo.FindSubSubCategoriesBySubCategoryID(id)
-    if err == nil && len(subSubCategories) > 0 {
-        return errors.New("cannot delete subcategory: it has sub-subcategories")
-    }
-
     // Check if subcategory has products
     products, err := s.repo.FindProductsBySubCategoryID(id)
     if err == nil && len(products) > 0 {
+        log.Println("it has products")
         return errors.New("cannot delete subcategory: it has products")
     }
 

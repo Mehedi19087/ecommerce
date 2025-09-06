@@ -3,12 +3,13 @@ package catalog
 import (
 	"net/http"
 	"strconv"
-    "fmt"
     "os"
-    "path/filepath"
-    "time"
+    "context"
 
 	"github.com/gin-gonic/gin"
+    "github.com/cloudinary/cloudinary-go/v2"
+    "github.com/cloudinary/cloudinary-go/v2/api/uploader"
+
 	// "bytes"
 	// "io"
 	// "log"
@@ -20,6 +21,56 @@ type ProductController struct {
 
 func NewProductController(productService ProductService) *ProductController {
 	return &ProductController{productService: productService}
+}
+
+
+func (ct *ProductController) UploadImage(c *gin.Context) {
+    // Get uploaded file
+    file, err := c.FormFile("image") // assuming frontend sends "image" field
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
+        return
+    }
+
+    // Open the file
+    src, err := file.Open()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not open file"})
+        return
+    }
+    defer src.Close()
+
+    // Initialize Cloudinary
+    cld, err := cloudinary.NewFromParams(
+        os.Getenv("CLOUDINARY_CLOUD_NAME"),
+        os.Getenv("CLOUDINARY_API_KEY"),
+        os.Getenv("CLOUDINARY_API_SECRET"),
+    )
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary config failed"})
+        return
+    }
+
+    // Upload to Cloudinary
+    result, err := cld.Upload.Upload(
+        context.Background(),
+        src,
+        uploader.UploadParams{
+            ResourceType: "image", // for images
+            Folder:       "uploads", // optional: organize in folder
+        },
+    )
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Upload failed: " + err.Error()})
+        return
+    }
+
+    // Return the secure URL
+    c.JSON(http.StatusOK, gin.H{
+        "url": result.SecureURL,
+        "public_id": result.PublicID,
+    })
 }
 
 // request structs
@@ -136,7 +187,7 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
 
 type updateProductRequest struct {
 	Name        string  `json:"name"`
-	Image            []string `json:"images"` 
+	Image       []string `json:"images"` 
 	Description string  `json:"description"`
 	SKU         string  `json:"sku"`
 	Price       float64 `json:"price" binding:"min=0"`
@@ -165,6 +216,7 @@ func (c *ProductController) UpdateProduct(ctx *gin.Context) {
 	product, err := c.productService.UpdateProduct(
 		uint(id),
 		req.Name,
+        req.Image,
 		req.Description,
 		req.SKU,
 		req.Price,
@@ -649,65 +701,5 @@ func (c *ProductController) ListSubCategories(ctx *gin.Context) {
 
     ctx.JSON(http.StatusOK, gin.H{
         "subcategories": subCategories,
-    })
-}
-
-
-// Add this method to your ProductController
-func (c *ProductController) UploadImage(ctx *gin.Context) {
-    // Get the uploaded file
-    file, err := ctx.FormFile("image")
-    if err != nil {
-        ctx.JSON(http.StatusBadRequest, gin.H{
-            "error": "No file uploaded",
-        })
-        return
-    }
-
-    // Validate file type
-    allowedTypes := map[string]bool{
-        ".jpg":  true,
-        ".jpeg": true,
-        ".png":  true,
-        ".gif":  true,
-        ".webp": true,
-    }
-    
-    ext := filepath.Ext(file.Filename)
-    if !allowedTypes[ext] {
-        ctx.JSON(http.StatusBadRequest, gin.H{
-            "error": "Only image files (jpg, jpeg, png, gif, webp) are allowed",
-        })
-        return
-    }
-
-    // Create uploads directory if it doesn't exist
-    uploadDir := "./uploads"
-    if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-        if err := os.MkdirAll(uploadDir, 0755); err != nil {
-            ctx.JSON(http.StatusInternalServerError, gin.H{
-                "error": "Failed to create upload directory",
-            })
-            return
-        }
-    }
-
-    // Generate unique filename
-    filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
-    filePath := filepath.Join(uploadDir, filename)
-
-    // Save file
-    if err := ctx.SaveUploadedFile(file, filePath); err != nil {
-        ctx.JSON(http.StatusInternalServerError, gin.H{
-            "error": "Failed to save file",
-        })
-        return
-    }
-
-    // Return the URL
-    ctx.JSON(http.StatusOK, gin.H{
-        "message":  "File uploaded successfully",
-        "filename": filename,
-        "url":      fmt.Sprintf("https://ecommerce-production-16c4.up.railway.app/uploads/%s", filename),
     })
 }
