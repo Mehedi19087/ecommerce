@@ -2,7 +2,7 @@ package cart
 
 import (
 	"github.com/gin-gonic/gin"
-	//"ecommerce/internal/auth"
+	"ecommerce/internal/auth"
 )
 
 func SetupCartRoutes(
@@ -13,7 +13,7 @@ func SetupCartRoutes(
 
 	// Cart routes - these should be protected by auth middleware in production
 	cart := v1.Group("/cart")
-	// cart.Use(auth.AuthMiddleware()) // Add this line
+	cart.Use(auth.JWTAuthMiddleware()) // Add this line
 	// {
 	cart.GET("", cartController.GetCart)
 	cart.POST("/items", cartController.AddItemToCart)
