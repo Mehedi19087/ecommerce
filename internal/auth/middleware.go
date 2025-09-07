@@ -85,6 +85,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
+			log.Println("header missing")
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Authorization header required",
 			})
@@ -95,6 +96,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// Validate Bearer format
 		tokenParts := strings.Split(authHeader, " ")
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+			log.Printf("invalid header format")
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid authorization header format. Use: Bearer <token>",
 			})
