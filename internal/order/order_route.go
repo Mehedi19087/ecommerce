@@ -1,11 +1,14 @@
 package order
 
 import (
+	"ecommerce/internal/auth"
+
 	"github.com/gin-gonic/gin"
 )
 
 func SetupOrderRoutes(router *gin.Engine, orderController *OrderController) {
 	v1 := router.Group("/api/v1")
+	v1.Use(auth.JWTAuthMiddleware())
 	orders := v1.Group("/orders")
 	{
 		orders.POST("", orderController.CreateOrder)

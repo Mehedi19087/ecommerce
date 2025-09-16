@@ -31,7 +31,6 @@ func (s *cartService) GetCartByUserID(userID uint) (*Cart, error) {
 	if cart == nil {
 		return &Cart{UserID: userID, Items: []CartItem{}}, nil
 	}
-
 	return cart, nil
 }
 
